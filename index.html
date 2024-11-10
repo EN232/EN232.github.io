@@ -69,6 +69,554 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-MISC-隐写" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2024/11/10/MISC-%E9%9A%90%E5%86%99/" class="article-date">
+  <time class="dt-published" datetime="2024-11-10T06:55:42.572Z" itemprop="datePublished">2024-11-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h3 id="原理："><a href="#原理：" class="headerlink" title="原理："></a>原理：</h3><p>把秘密隐藏到普通的信息中，但是目前的隐写术是将某些秘密信息隐藏于数字媒介中，而又不损害载体原来信息的表达，从而掩盖秘密信息。常见的隐写载体包括文本，图像，音频，视频等。比赛中主要考察两点：隐写方法的识别和信息提取。</p>
+<h3 id="图像隐写"><a href="#图像隐写" class="headerlink" title="图像隐写"></a>图像隐写</h3><p>常见的分为：插入隐写和替换隐写</p>
+<h4 id="插入隐写"><a href="#插入隐写" class="headerlink" title="插入隐写"></a>插入隐写</h4><p> 指利用文件格式的冗余性，在不影响文件的正常使用从而隐藏信息，这种方法会导致文件的大小发生变化，隐藏信息可能被插入到末尾（追加插入法）或者开头（前置插入法）</p>
+<h5 id="追加插入法"><a href="#追加插入法" class="headerlink" title="追加插入法"></a>追加插入法</h5><p>windows会根据后缀名解析文件，文件结束标志后得数据不会被解析，对于linux系统而言，区别是根据文件头识别类型而不是给文件尾部。</p>
+<h5 id="前置插入法"><a href="#前置插入法" class="headerlink" title="前置插入法"></a>前置插入法</h5><p>将数据插入到文件按头部的冗余部分，有一些文件在设计时会保留一块数据区作为批注信息。</p>
+<h5 id="元数据"><a href="#元数据" class="headerlink" title="元数据"></a>元数据</h5><p>指文件的属性，比如：大小，数据类型，拥有者等等，可能隐藏信息。</p>
+<h4 id="替换隐写（常考）"><a href="#替换隐写（常考）" class="headerlink" title="替换隐写（常考）"></a>替换隐写（常考）</h4><p>将几乎不影响文件内容的数据进行修改，达到隐藏信息的目的，最常见的是最低比特位隐写（LSB隐写）。因为有损压缩会损毁修改掉的微小信息。</p>
+<h5 id="LSB（最不显著位）隐写"><a href="#LSB（最不显著位）隐写" class="headerlink" title="LSB（最不显著位）隐写"></a>LSB（最不显著位）隐写</h5><ul>
+<li>在图像中，每一个通道由8比特构成，像素值在0~255之间，在单通道图像中，通过不同的黑白比例达到不同的灰度。</li>
+<li>三通道图像中（RGB），每个通道代表红，绿，蓝（利用三种颜色通道的最后一位隐藏信息,)，在RGBA图像中，多出一个透明度通道。因为二进制数据的最后一位大小改变的影响很小，就可以在这里替换数据。更高级的LSB隐写-PLTE块隐写。</li>
+<li><strong>隐写方式</strong>：每一个色素都由RGB（红绿蓝）三种颜色组成，每种颜色的占比不同，所调出来的颜色不同。红218（11011010），绿150（10010110），红（10010101），假如改变每种颜色二进制数字的最后一位，对于整体的颜色改变， 肉眼并不能观察出来，从而达到隐藏信息的目的。</li>
+<li>左右选择不同的色彩通道，可以查看不同通道下的图片，出题人可能在某个通道里面加入一个二维码之类的<br> 例题讲解</li>
+</ul>
+<p><img src="file:///C:/Users/lenovo/AppData/Local/Temp/msohtmlclip1/01/clip_image002.png"></p>
+<p>把图片放到stegsolve中，然后dataextract，然后勾选LSB，再把RGB最低位勾选出来，然后预览（preview），右边那一大堆是实体编码，把多于元素去掉之后，把它转换为16进制</p>
+<p>例题二：</p>
+<p>按照上述步骤操作之后，得到</p>
+<p>![[Pasted image 20241027220206.png]]</p>
+<p>只有6个字母，联想到16进制，将zwxyv映射到abcde，解码得到flag。</p>
+<p><img src="file:///C:/Users/lenovo/AppData/Local/Temp/msohtmlclip1/01/clip_image004.png"></p>
+<p>所有的数字只有两种类型，0和255，那么不是白色就是黑色，一共有160000个数据，那么我们可以联想到400*400的一个二维码图片<br>执行右边的脚本即可得到图片。</p>
+<h5 id="PNG图片（无损压缩"><a href="#PNG图片（无损压缩" class="headerlink" title="PNG图片（无损压缩)"></a>PNG图片（无损压缩)</h5><ul>
+<li><p>我们之所以能看到图片，就是因为图片查看器将图片所对应的二进制字节流按照它的解释规则将图片转换为色素块，很多色素块拼成了图片，因此，分析一个图片通常是查看它的原始二进制字节流。</p>
+</li>
+<li><p>使用010editor （文件结构查看工具）来获得图片的16进制参数。</p>
+</li>
+<li><p>一个PNG图片的数据可以分为多个数据块。</p>
+</li>
+<li><p>PNG图片文件头的16进制表示：89 50 4E 47</p>
+</li>
+<li><p>IHDR数据块：文件头数据块，通常包含图片的高度和宽度等基本属性，可以通过将crc还原出来所对应的高度和宽度来找到flag。<br><img src="file:///C:/Users/lenovo/AppData/Local/Temp/msohtmlclip1/01/clip_image003.png"></p>
+<p>在IHDR数据块中找到ihdr，在这里有图片的高度和宽度信息，假如一个图片的高度为200，但是出题人修改高度为150，那么我们在拿到这个题目进行查看时，只能看到150高度的信息，出题人可能将信息隐藏到另外50高度里面，那么我们就可以通过分析IHDR数据块的crc，从而不断的更改高度直到某个高度所对应的crc和分析所得到的crc一样，那么就得到了正确高度，从而得到隐藏信息</p>
+</li>
+<li><p>cHRM数据块。</p>
+</li>
+<li><p>IDAT数据块（多个）（包含图片内容）：包含了数据的构成参数。如果该数据块有问题，有一种题型是在该数据块中存有压缩包，通过Zlib工具解压缩查看内容。</p>
+<p><img src="file:///C:/Users/lenovo/AppData/Local/Temp/msohtmlclip1/01/clip_image007.png"> <img src="file:///C:/Users/lenovo/AppData/Local/Temp/msohtmlclip1/01/clip_image010.png"></p>
+<p> 上面已经提到，IDAT数据块包含了PNG图片的内容，有多个IDAT数据块。<br><img src="file:///C:/Users/lenovo/AppData/Local/Temp/msohtmlclip1/01/clip_image013.png"></p>
+<p>每一个IDAT数据块都包含了多个字节流，前面已经说过，图片是由字节流组成的。<br><strong>考察点（crc校验）</strong>：<br>每个数据块都含有一个不同的crc参数，可以通过题目图片的crc与自己通过工具将数据块分析出来的crc是否相同来判断该数据块是否有问题。（PNGcheck工具来分析数据块的crc）。可以把crc理解为数据块的“身份证”<br> <strong>实际出题格式之一</strong>：<br>可能在问题数据块中压缩隐藏文件，那么我们就把数据块提取出来，解压缩分析</p>
+</li>
+<li><p>IEAD数据块：图片结束标志。</p>
+</li>
+</ul>
+<h5 id="JPG图片（有损或无损）"><a href="#JPG图片（有损或无损）" class="headerlink" title="JPG图片（有损或无损）"></a>JPG图片（有损或无损）</h5><ul>
+<li>由一个一个段组成</li>
+<li>文件头识别：FFD8</li>
+</ul>
+<p><img src="file:///C:/Users/lenovo/AppData/Local/Temp/msohtmlclip1/01/clip_image002.png"></p>
+<p><img src="file:///C:/Users/lenovo/AppData/Local/Temp/msohtmlclip1/01/clip_image004.jpg"></p>
+<p>常用工具：silenteye，steghide，stegsolve</p>
+<h5 id="GIF（无损）"><a href="#GIF（无损）" class="headerlink" title="GIF（无损）"></a>GIF（无损）</h5><ul>
+<li>文件头：GIF89a&#x2F;GIF87a（都是可打印字符），文件伪装很方便，只需开头就是GIF89a&#x2F;GIF87a就可以，而png或者jpg需要用工具才能伪装，因为他的文件头不是可打印字符，与文件上传相结合出题，如果题目要求上传一个GIF文件，那么我们可以在一句话木马前面加上GIF89a&#x2F;GIF87a，那它就是“GIF”文件了</li>
+<li>出题方式：<br> 追加插入<br>基于图像的隐写（由于它是一个动图，所以可能在某一帧插入敏感信息）<br>基于时间的隐写（不同的延迟时间代表不同的数据）<br>Kali中提取延迟时间的命令</li>
+<li>做题方法<br>用identify命令获取每一帧之间的时间间隔，想想有没有可能和密码学结合起来，每一帧的时间间隔对应一个字符。</li>
+</ul>
+<h4 id="图片隐写三板斧"><a href="#图片隐写三板斧" class="headerlink" title="图片隐写三板斧"></a>图片隐写三板斧</h4><h5 id="第一板斧：010editor-strings"><a href="#第一板斧：010editor-strings" class="headerlink" title="第一板斧：010editor strings"></a>第一板斧：010editor strings</h5><ul>
+<li>Strings命令：strings flag.png | grep “keyword”。这样就只显示flag.png中的包含keyword的字符串</li>
+</ul>
+<h5 id="第二板斧：stegsolve-zsteg"><a href="#第二板斧：stegsolve-zsteg" class="headerlink" title="第二板斧：stegsolve zsteg"></a>第二板斧：stegsolve zsteg</h5><p><img src="file:///C:/Users/lenovo/AppData/Local/Temp/msohtmlclip1/01/clip_image002.jpg"></p>
+<p><img src="file:///C:/Users/lenovo/AppData/Local/Temp/msohtmlclip1/01/clip_image004.jpg"></p>
+<h5 id="第三板斧：binwalk-foremost"><a href="#第三板斧：binwalk-foremost" class="headerlink" title="第三板斧：binwalk foremost"></a>第三板斧：binwalk foremost</h5><ul>
+<li>fcrackzip命令：用于爆破zip文件的密码</li>
+<li>可以使用字典来爆破，这个wordlist.txt是字典，后面的zip文件就是待破解的压缩包</li>
+<li>fcrackzip -D -p &#x2F;path&#x2F;to&#x2F;wordlist.txt protected.zip</li>
+<li>如果密码是比较简单的格式，就可以直接使用命令</li>
+<li>如果密码格式比较简单，可以直接用简单的指令进行破解<ul>
+<li>fcrackzip -b -l 4 -s “0123456789” protected.zip<br>这样的格式就是密码4位全是数字</li>
+<li>fcrackzip -b -l 4 -s “abcdefghijklmnopqrstuvwxyz” protected.zip<br>这样的就是4位全是字母</li>
+<li>fcrackzip -b -l 4 -s “abcdefghijklmnopqrstuvwxyz0123456789” protected.zip<br> 这样就是小写字母与数字的集合</li>
+</ul>
+</li>
+<li>Foremost：直接提取可能隐藏在图片中的文件</li>
+<li>Binwalk -e 1.png 也可以直接提取png图片里面的文件<br>Foremost  1.jpg<br>这样就会生成一个out文件，里面是提取出来的文件</li>
+<li>Binwalk：查看该图片是否隐藏其他文件。</li>
+<li>Pcrt.py：脚本工具，用于检查png图片的crc校验码从而直接修复数据</li>
+<li>Zsteg：可以检测png和bmp中的隐写数据，功能非常强大，可以用它来检测LSB中的信息隐藏通道。</li>
+</ul>
+<h5 id="板斧升级"><a href="#板斧升级" class="headerlink" title="板斧升级"></a>板斧升级</h5><ul>
+<li>第一板斧升级：利用png图片中的crc进行图片的宽高修复等。</li>
+<li>第二板斧升级：可能将LSB中隐藏的信息加密成密文，这是我们需要找到密钥破解。</li>
+<li>工具：cloacked-pixel中的lsb.py脚本</li>
+</ul>
+<h3 id="音频隐写"><a href="#音频隐写" class="headerlink" title="音频隐写"></a>音频隐写</h3><ul>
+<li>首要关注：音频中有关基本属性（标题，创作者等等）的信息。</li>
+<li>音频文件后缀包括mp3（常见），wav（常见），wma，ape等等。</li>
+</ul>
+<h4 id="Mp3（有损）"><a href="#Mp3（有损）" class="headerlink" title="Mp3（有损）"></a>Mp3（有损）</h4><ul>
+<li>主要特点是将人耳不敏感的高频部分进行压缩，保留低频部分。</li>
+</ul>
+<h4 id="基于波形图的隐写"><a href="#基于波形图的隐写" class="headerlink" title="基于波形图的隐写"></a>基于波形图的隐写</h4><ul>
+<li>如果音频文件是单声道就只有一个波形图，如果有两个，就有两个波形图，一些规则的波形图很可能隐藏某些密文，提取出来即可分析。</li>
+<li>工具：Audacity（分析波形图等等）</li>
+</ul>
+<h4 id="基于频谱图的隐写"><a href="#基于频谱图的隐写" class="headerlink" title="基于频谱图的隐写"></a>基于频谱图的隐写</h4><p>直接查看频谱图即可</p>
+<h4 id="音频LSB隐写"><a href="#音频LSB隐写" class="headerlink" title="音频LSB隐写"></a>音频LSB隐写</h4><ul>
+<li>经常使用silenteye来进行分析隐写题目，需要密码。</li>
+<li>MP3文件隐写：Mp3文件（有损压缩，其出题范围很小）：Mp3Stego（提取隐藏在mp3或者wav中隐藏文件的工具），当用mp3stego解码时，需要把mp3放在Decode.exe相同的文件夹下。</li>
+</ul>
+<h4 id="拨号音识别"><a href="#拨号音识别" class="headerlink" title="拨号音识别"></a>拨号音识别</h4><h4 id="脉冲拨号原理"><a href="#脉冲拨号原理" class="headerlink" title="脉冲拨号原理"></a>脉冲拨号原理</h4><p>拨号盘在回转的时候控制电路节点的断和续，拨3，断续3次，拨0，断续10次以此类推。这个不容易被交换机识别且太慢。</p>
+<h4 id="双音多频拨号原理"><a href="#双音多频拨号原理" class="headerlink" title="双音多频拨号原理"></a>双音多频拨号原理</h4><p>每个数字或字符都由一个高频和一个低频组成。</p>
+<h4 id="音频隐写总结："><a href="#音频隐写总结：" class="headerlink" title="音频隐写总结："></a>音频隐写总结：</h4><ul>
+<li>先用010查看是否有隐藏文件或者冗余信息</li>
+<li>然后使用audacity查看波形图或者频谱图</li>
+<li>最后如果是wav文件，考虑LSB隐写（Silenteye），如果是mp3文件，使用mp3stego</li>
+</ul>
+<h3 id="视频隐写"><a href="#视频隐写" class="headerlink" title="视频隐写"></a>视频隐写</h3><ul>
+<li>视频就是图像和音频的总和，只要把两者分离出来就可以按照思路解题，常见的视频文件格式为avi，mov，rmvb和mp4等。</li>
+<li>对于视频的帧提取，可以用ffmpeg或者video to picture，对于flash文件的提取，可以用flash decompiler trillix。</li>
+</ul>
+<h3 id="文本隐写"><a href="#文本隐写" class="headerlink" title="文本隐写"></a>文本隐写</h3><p>文本内容的隐写（基本上归于密码）</p>
+<h3 id="Word隐写"><a href="#Word隐写" class="headerlink" title="Word隐写"></a>Word隐写</h3><p>最基本的是在文件属性中隐藏信息，也可以通过写入白色文字，插入文本框或者图形遮挡等<br>由于word文件头和zip一样，所以都可以改后缀，解压</p>
+<h3 id="PDF的隐写"><a href="#PDF的隐写" class="headerlink" title="PDF的隐写"></a>PDF的隐写</h3><p>一个pdf文件分为头部，文件体和交叉引用表和尾部4部分。<br>头部：pdf文件第一行是标识字符，随后跟的是版本号</p>
+<p><img src="file:///C:/Users/lenovo/AppData/Local/Temp/msohtmlclip1/01/clip_image002.jpg"></p>
+<p>文件体：由文件内容的一系列obj对象组成</p>
+<p><img src="file:///C:/Users/lenovo/AppData/Local/Temp/msohtmlclip1/01/clip_image004.jpg"></p>
+<p>交叉引用表：标识字符是xref</p>
+<p><img src="file:///C:/Users/lenovo/AppData/Local/Temp/msohtmlclip1/01/clip_image006.jpg"></p>
+<p>尾部：</p>
+<p><img src="file:///C:/Users/lenovo/AppData/Local/Temp/msohtmlclip1/01/clip_image008.jpg"></p>
+<p>Pdf的隐写比较复杂</p>
+<h5 id="总结常见套路"><a href="#总结常见套路" class="headerlink" title="总结常见套路"></a>总结常见套路</h5><p>1：利用图片遮挡住隐藏的内容<br>2：在pdf文字里面隐藏信息，这里我们用kali自带的工具提取所有的文本内容，查看隐藏的信息<br> pdftotext 1.pdf flag.txt<br> 将1.pdf里面的内容提取出来保存在flag.txt里面<br>3：利用obj对象隐藏信息。Obj中的对象经过zlib算法压缩，插入到经过压缩的obj对象，利用该对象隐藏信息。使用工具PDFStreamDumper即可查看obj对象解压缩。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2024/11/10/MISC-%E9%9A%90%E5%86%99/" data-id="cm3b8qqck0000nwv68sbo8who" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-编码解码" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2024/11/10/%E7%BC%96%E7%A0%81%E8%A7%A3%E7%A0%81/" class="article-date">
+  <time class="dt-published" datetime="2024-11-10T06:55:39.742Z" itemprop="datePublished">2024-11-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="古典密码"><a href="#古典密码" class="headerlink" title="古典密码"></a>古典密码</h2><p>很少使用，其大部分加密方式都是利用 <strong>替换式密码</strong> 或 <strong>移项式密码</strong>，有时则是两者的混合。<br>通常来说需要对<strong>算法和密钥保密</strong>。</p>
+<h3 id="凯撒密码"><a href="#凯撒密码" class="headerlink" title="凯撒密码"></a>凯撒密码</h3><ul>
+<li>它是一种<strong>替换加密</strong>的技术，明文中的所有字母都在字母表上向后（或向前）按照一个固定数目进行偏移后被替换成密文。<br>如:明文字母表：ABCDEFGHIJKLMNOPQRSTUVWXYZ<br> 密文字母表：DEFGHIJKLMNOPQRSTUVWXYZABC</li>
+<li>解密方法：解密的人根据事先已知的密钥反过来操作，得到原来的明文。</li>
+</ul>
+<h3 id="维吉尼亚密码"><a href="#维吉尼亚密码" class="headerlink" title="维吉尼亚密码"></a>维吉尼亚密码</h3><h4 id="前提"><a href="#前提" class="headerlink" title="前提"></a>前提</h4><ul>
+<li>是由一些偏移量不同的恺撒密码组成。</li>
+<li>为了生成密码，需要使用<strong>表格法</strong>。</li>
+<li>&#x3D;&#x3D;<strong>密钥准备</strong>‌&#x3D;&#x3D;：密钥长度需要与明文长度相同。如果密钥长度少于明文长度，则重复拼接密钥直到与明文长度相同。</li>
+<li>&#x3D;&#x3D;‌<strong>加密过程</strong>‌&#x3D;&#x3D;：根据明文和密钥的对应字母，在维吉尼亚密码表格中找到相交点。（例如，明文第一个字母是“I”，密钥第一个字母是“o”，在表格中找到“I”列与“o”行相交点，该点对应的字母“W”即为密文第一个字母。）同理，对明文和密钥的后续字母进行相同的操作，得到完整的密文。</li>
+<li>维吉尼亚密码只对字母进行加密，密文与明文的字母大小写保持一致。</li>
+<li>若文本中出现非字母字符，会原样保留。</li>
+<li>如果输入多行文本，每行是单独加密的。</li>
+</ul>
+<h4 id="对照表"><a href="#对照表" class="headerlink" title="对照表"></a>对照表</h4><p><img src="https://img2018.cnblogs.com/blog/1228809/202002/1228809-20200228202249268-1484724482.png"></p>
+<h4 id="例如"><a href="#例如" class="headerlink" title="例如"></a>例如</h4><p>明文：HEETIAN</p>
+<p>  密钥：LABLABL</p>
+<p>  密文：SEFEIBY</p>
+<h3 id="培根密码"><a href="#培根密码" class="headerlink" title="培根密码"></a>培根密码</h3><h4 id="介绍培根密码的本质是将字母用一串二进制数替换，但是表示的过程中，没有采取0和1的形式，而使用a和b来代替。加密的过程首先将要加密的内容根据加密表里的内容进行替换，如a用AAAAA替换，b用AAAAB替换。替换完之后，我们可以把A和B当作两个不同的特征（如大写代表A-小写代表B，正体代表A-斜体代表B）带入到一个无关的句子中，这就得到了我们加密后的结果。（其本质上是将二进制信息通过样式的区别，加在了正常书写之上，培根密码所包含的信息可以和用于承载其的文章完全无关。）"><a href="#介绍培根密码的本质是将字母用一串二进制数替换，但是表示的过程中，没有采取0和1的形式，而使用a和b来代替。加密的过程首先将要加密的内容根据加密表里的内容进行替换，如a用AAAAA替换，b用AAAAB替换。替换完之后，我们可以把A和B当作两个不同的特征（如大写代表A-小写代表B，正体代表A-斜体代表B）带入到一个无关的句子中，这就得到了我们加密后的结果。（其本质上是将二进制信息通过样式的区别，加在了正常书写之上，培根密码所包含的信息可以和用于承载其的文章完全无关。）" class="headerlink" title="介绍培根密码的本质是将字母用一串二进制数替换，但是表示的过程中，没有采取0和1的形式，而使用a和b来代替。加密的过程首先将要加密的内容根据加密表里的内容进行替换，如a用AAAAA替换，b用AAAAB替换。替换完之后，我们可以把A和B当作两个不同的特征（如大写代表A&#x2F;小写代表B，正体代表A&#x2F;斜体代表B）带入到一个无关的句子中，这就得到了我们加密后的结果。（其本质上是将二进制信息通过样式的区别，加在了正常书写之上，培根密码所包含的信息可以和用于承载其的文章完全无关。）"></a>介绍培根密码的本质是将字母用一串二进制数替换，但是表示的过程中，没有采取0和1的形式，而使用a和b来代替。加密的过程首先将要加密的内容根据加密表里的内容进行替换，如a用AAAAA替换，b用AAAAB替换。替换完之后，我们可以把A和B当作两个不同的特征（如大写代表A&#x2F;小写代表B，正体代表A&#x2F;斜体代表B）带入到一个无关的句子中，这就得到了我们加密后的结果。（其本质上是将二进制信息通过样式的区别，加在了正常书写之上，培根密码所包含的信息可以和用于承载其的文章<strong>完全无关</strong>。）</h4><h4 id="表格"><a href="#表格" class="headerlink" title="表格"></a>表格</h4><p><img src="https://bkimg.cdn.bcebos.com/pic/f9dcd100baa1cd118c10fccdb512c8fcc2ce2dbd?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080"></p>
+<h3 id="栅栏密码"><a href="#栅栏密码" class="headerlink" title="栅栏密码"></a>栅栏密码</h3><p>栅栏密码属于古典密码中最经典的<strong>移项式密码</strong>，同之前讲到的凯撒密码等替换式密码代表了密码学中最重要的两个概念</p>
+<p>以栏栅栏密码为例来讲解它的加密和解密过程。</p>
+<p>  加密过程：</p>
+<pre><code>    明文：THERE_IS_A_CIPHER_
+
+    两个一组，得到：(TH) (ER) (E_) (IS) (_A) (_C) (IP) (HE) (R_)
+
+    先每组中取出第一个字母：TEEI__IHR
+
+    再从每组中取出第二个字母：HR_SACPE_
+
+    连在一起得到密文：TEEI__IHRHR_SACPE_
+    
+    解密过程：
+
+    而解密的时候，先把密文从中间分开，变为两行：
+
+    TEEI__IHR
+
+    HR_SACPE_
+
+    再按上下上下的顺序组合起来：
+
+    THERE_IS_A_CIPHER_
+</code></pre>
+<p>栅栏密码的分栏的一个前提就是分的栏数需是明文长度的因数，这样才会使得分出来的每个栏长度都一样。</p>
+<p>  对于多栏，我们还是用上面的例子来讲解。</p>
+<p>  上面的明文字符串（THERE_IS_A_CIPHER_）的长度是18    </p>
+<p>  所以我们可以把它分为2，3，4，6，9栏，这里我们以6栏为例。</p>
+<p>  以每个元素相隔6个字符分割出栅栏。</p>
+<pre><code>    第一栏：TII
+
+    第二栏：HSP
+
+    第三栏：E_H
+
+    第四栏：RAE
+
+    第五栏：E_R
+
+    第六栏：_C_
+</code></pre>
+<p>  连接在一起得到密文：TIIHSPE_HRAEE_R_C_</p>
+<h3 id="希尔密码"><a href="#希尔密码" class="headerlink" title="希尔密码"></a>希尔密码</h3><p>希尔密码是运用基本矩阵论原理的替换密码</p>
+<h3 id="Ascll表"><a href="#Ascll表" class="headerlink" title="Ascll表"></a>Ascll表</h3><p><img src="https://i-blog.csdnimg.cn/blog_migrate/36de2d3f0e8599fd7e6050253f78b677.png"></p>
+<h3 id="base-16"><a href="#base-16" class="headerlink" title="base 16"></a>base 16</h3><p>1.使用<strong>16个ASCII可打印字符</strong>（数字0-9和字母A-F），对任意字节数据进行编码。称 HEX (十六进制)，是不区分大小写的十六进制编码标准</p>
+<p>2.先获取输入字符串每个字节的二进制值（不足8比特在高位补0），然后将其串联进来，再按照4比特一组进行切分，将每组二进制数分别转换成十进制。</p>
+<p>　 3.Base16编码后的数据量是原数据的两倍：1000比特数据需要250个字符（即 250*8&#x3D;2000 比特）。</p>
+<p><strong>流程</strong>：给定的字符串根据Ascll标转化成二进制–&gt;重新划分–&gt;再转化为16进制</p>
+<p><strong>注</strong>：可以看到8比特数据按照4比特切分刚好是两组，所以Base16不可能用到填充符号“&#x3D;”。</p>
+<p><strong>例：</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>H</th>
+<th>e</th>
+<th>l</th>
+<th>l</th>
+<th>o</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Ascll</td>
+<td>72</td>
+<td>101</td>
+<td>108</td>
+<td>108</td>
+<td>111</td>
+<td></td>
+</tr>
+<tr>
+<td>二进制</td>
+<td>01001000</td>
+<td>01100101</td>
+<td>01101100</td>
+<td>01101100</td>
+<td>01101111</td>
+<td></td>
+</tr>
+<tr>
+<td>重新划分</td>
+<td>0100    1000</td>
+<td>0110  0101</td>
+<td>0110  1100</td>
+<td>0110  1100</td>
+<td>0110  1111</td>
+<td></td>
+</tr>
+<tr>
+<td>编码后</td>
+<td>4        8</td>
+<td>6       5</td>
+<td>6      C</td>
+<td>6       C</td>
+<td>6        F</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="base32"><a href="#base32" class="headerlink" title="base32"></a>base32</h3><p> <strong>1</strong>.Base32编码是使用<strong>32个可打印字符（字母A-Z和数字2-7）</strong>对任意字节数据进行编码的方案，编码后的字符串不用区分大小写并排除了容易混淆的字符，可以方便地由人类使用并由计算机处理。(1和L区分)</p>
+<p> <strong>2</strong>.Base32主要用于编码二进制数据，但是Base32也能够编码诸如ASCII之类的二进制文本。</p>
+<p><strong>3</strong>.Base32将任意字符串按照字节进行切分，并将每个字节对应的二进制值（不足8比特高位补0）串联起来，<strong>按照5比特一组进行切分</strong>，并将每组二进制值转换成十进制来对应32个可打印字符中的一个。</p>
+<p>由于数据的二进制传输是按照8比特一组进行（即一个字节），因此Base32按5比特切分的二进制数据必须是<strong>40比特的倍数（5和8的最小公倍数）</strong>。</p>
+<p><strong>流程</strong>：给定的字符串根据Ascll标转化成二进制–&gt;重新划分–&gt;再根据码表转换</p>
+<p><strong>重新划分</strong>：划分时最后不够5的后面先补0，总体不够<strong>40比特的倍数</strong>的补等号（一个等号就是5bit）</p>
+<p><strong>例：</strong></p>
+<table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center">C</th>
+<th align="center">t</th>
+<th align="center">f</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">Ascll</td>
+<td align="center">67</td>
+<td align="center">116</td>
+<td align="center">102</td>
+</tr>
+<tr>
+<td align="center">二进制</td>
+<td align="center">01000011</td>
+<td align="center">01110100</td>
+<td align="center">01100110</td>
+</tr>
+<tr>
+<td align="center">Ctf–&gt;IN2GM&#x3D;&#x3D;&#x3D;</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center"><strong>码表</strong></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center"><img src="https://img-blog.csdnimg.cn/20200107094249344.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3MTQxODY1,size_16,color_FFFFFF,t_70"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+<h3 id="base-64"><a href="#base-64" class="headerlink" title="base 64"></a>base 64</h3><p>Base64是一种基于64个可打印字符来表示二进制数据的表示方法。由于，所以每6个比特为一个单元，对应某个可打印字符。3个字节有24个比特，对应于4个Base64单元，即3个字节可由4个可打印字符来表示。</p>
+<p>   由于数据的二进制传输是按照8比特一组进行（即一个字节），因此Base64按6比特切分的二进制数据必须是24<strong>比特的倍数（8和6的最小公倍数）</strong>。</p>
+<p><strong>流程：</strong>给定的字符串根据Ascll标转化成二进制–&gt;重新划分–&gt;再根据码表转换</p>
+<p><strong>重新划分：</strong>划分时最后不够6的后面先补0，总体不够24<strong>比特的倍数</strong>的补等号（一个等号就是6bit）<br>码表<br>  <img src="https://img-blog.csdnimg.cn/12bd0efeafa5431ea699385774f3824c.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAU2hlbm5vdGVy5Ly4,size_20,color_FFFFFF,t_70,g_se,x_16#pic_center"></p>
+<h3 id="base16-base32-base64的区分"><a href="#base16-base32-base64的区分" class="headerlink" title="base16,base32,base64的区分"></a>base16,base32,base64的区分</h3><ul>
+<li>base16:   范围是数字（0-9），字母（ABCDE）</li>
+<li>base32：只有大写字母（A-Z）和数字234567</li>
+<li>base64:  就是包括小写字母a-z、大写字母A-Z、数字0-9、符号”+”、”&#x2F;“一共64个字符的字符集，（任何符号都可以转换成这个字符集中的字符，这个转换过程就叫做base64编码。）</li>
+</ul>
+<h3 id="base58"><a href="#base58" class="headerlink" title="base58"></a>base58</h3><h5 id="字符表"><a href="#字符表" class="headerlink" title="字符表"></a>字符表</h5><p><strong>Base58字符表包括以下字符</strong>‌：</p>
+<ul>
+<li>码表：<br> <img src="https://i-blog.csdnimg.cn/blog_migrate/66bd667670e8b6db26c01982256cdf5c.png"></li>
+<li>数字：1, 2, 3, 4, 5, 6, 7, 8, 9</li>
+<li>大写字母：A, B, C, D, E, F, G, H, J, K, M, N, P, Q, R, S, T, U, V, W, X, Y, Z</li>
+<li>小写字母：a, b, c, d, e, f, g, h, i, j, k, m, n, o, p, q, r, s, t, u, v, w, x, y, z</li>
+</ul>
+<p>‌<strong>Base58字符表不包括以下字符</strong>‌：</p>
+<ul>
+<li>数字0（零）</li>
+<li>大写字母O（大写字母O）</li>
+<li>小写字母l（小写字母L）</li>
+<li>大写字母I（大写字母I）</li>
+<li>加号（+）</li>
+<li>斜杠（&#x2F;）</li>
+</ul>
+<h5 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h5><ol>
+<li><strong>将输入数据转换为整数</strong>：<ul>
+<li>将要编码的数据（通常是二进制数据）视为一个大整数。</li>
+</ul>
+</li>
+<li><strong>进行整数除法</strong>：<ul>
+<li>将该整数连续除以 58，并记录余数。</li>
+<li>余数将用于查找 Base58 字符集中的相应字符。</li>
+</ul>
+</li>
+<li><strong>构建结果字符串</strong>：<ul>
+<li>继续将整数除以 58，直到结果为 0。</li>
+<li>余数对应的字符按相反顺序（从最后一个余数开始）组合成结果字符串。</li>
+</ul>
+</li>
+<li><strong>处理前导零</strong>：<ul>
+<li>在输入数据中，如果有前导零，每个前导零会在结果字符串中增加一个字符 <code>&#39;1&#39;</code>。这样可以保留原始数据中的零信息。</li>
+</ul>
+</li>
+</ol>
+<h5 id="解码"><a href="#解码" class="headerlink" title="解码"></a>解码</h5><ol>
+<li><strong>将 Base58 字符串转换为整数</strong>：<ul>
+<li>通过将每个字符转换为相应的整数值，并用 58 的幂进行加权，计算出对应的大整数。</li>
+</ul>
+</li>
+<li><strong>将整数转换为字节</strong>：<ul>
+<li>将得到的大整数转换回原始的字节数组。</li>
+</ul>
+</li>
+<li>**处理前导 ‘1’**：<ul>
+<li>在解码时，如果结果字符串中有前导 <code>&#39;1&#39;</code>，则在字节数组的开头添加相应数量的零字节。</li>
+</ul>
+</li>
+</ol>
+<h3 id="base-85"><a href="#base-85" class="headerlink" title="base 85"></a>base 85</h3><p>0-9  A-Z a-z !#$%&amp;()*+-;&lt;&gt;&#x3D;?@^ __’{}|~</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2024/11/10/%E7%BC%96%E7%A0%81%E8%A7%A3%E7%A0%81/" data-id="cm3b8qqcp0001nwv668u36it1" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-流量分析" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2024/11/10/%E6%B5%81%E9%87%8F%E5%88%86%E6%9E%90/" class="article-date">
+  <time class="dt-published" datetime="2024-11-10T06:55:32.052Z" itemprop="datePublished">2024-11-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>流量分析常涉及到解密、协议分析、会话重建等技巧，是考察选手对网络协议及工具熟练掌握程度的一 个重要方向。（ 通常题目会提供一个 .pcap 文件，它是网络数据包的捕获文件，我们需要分析其中的流量数据。）</p>
+<h2 id="工具"><a href="#工具" class="headerlink" title="工具"></a>工具</h2><p>Wireshark：最流行的网络协议分析工具，功能强大，可视化流量，支持各种协议的分析。</p>
+<h3 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h3><p>1、打开wireshark，主界面如下：<br><img src="https://i-blog.csdnimg.cn/blog_migrate/d043c694d8244e6b86175ef767b7a192.png"></p>
+<p>2、选择菜单栏上 捕获 -&gt; 选项，勾选WLAN网卡。这里需要根据各自电脑网卡使用情况选择，简单的办法可以看使用的IP对应的网卡。点击Start，启动抓包。<br><img src="https://i-blog.csdnimg.cn/blog_migrate/de02a276b75c10046502f808dfd54aa0.png"></p>
+<p>3、wireshark启动后，wireshark处于抓包状态中。<br><img src="https://i-blog.csdnimg.cn/blog_migrate/d95525bc836860f87317456d4a430935.png"></p>
+<p>4、执行需要抓包的操作，如在cmd窗口下执行ping <a target="_blank" rel="noopener" href="http://www.baidu.com./">www.baidu.com。</a><br><img src="https://i-blog.csdnimg.cn/blog_migrate/fdb0b9c085120775e78e9bcec4330c6c.png"></p>
+<p>5、操作完成后相关数据包就抓取到了，可以点击 停止捕获分组 按钮。<br><img src="https://i-blog.csdnimg.cn/blog_migrate/6ddaee23653125517540b9d58f0a88d8.png"></p>
+<p>6、为避免其他无用的数据包影响分析，可以通过在过滤栏设置过滤条件进行数据包列表过滤，获取结果如下。说明：ip.addr &#x3D;&#x3D; 183.232.231.172 and icmp 表示只显示ICPM协议且主机IP为183.232.231.172的数据包。说明：协议名称icmp要小写。<br><img src="https://i-blog.csdnimg.cn/blog_migrate/e60dce7cabe3c3d1be31d39b2e832b10.png"></p>
+<p>7、wireshark抓包完成，并把本次抓包或者分析的结果进行保存，就这么简单。关于wireshark显示过滤条件、抓包过滤条件、以及如何查看数据包中的详细内容在后面介绍。<br><img src="https://i-blog.csdnimg.cn/blog_migrate/ee4a828d5137acd94af7a79b5301dbfa.png"></p>
+<h3 id="抓包页面介绍"><a href="#抓包页面介绍" class="headerlink" title="抓包页面介绍"></a>抓包页面介绍</h3><p><img src="https://i-blog.csdnimg.cn/blog_migrate/adfb78074d23e7a9931de4efe722302f.png"><br>Wireshark 的主界面包含6个部分：</p>
+<ul>
+<li>菜单栏：用于调试、配置</li>
+<li>工具栏：常用功能的快捷方式</li>
+<li>过滤栏：指定过滤条件，过滤数据包</li>
+<li>数据包列表：核心区域，每一行就是一个数据包</li>
+<li>数据包详情：数据包的详细数据</li>
+<li>数据包字节：数据包对应的字节流，二进制</li>
+<li>说明：数据包列表区中不同的协议使用了不同的颜色区分。协议颜色标识定位在菜单栏 视图 –&gt; 着色规则。如下所示<br><img src="https://i-blog.csdnimg.cn/blog_migrate/32d11e3151e56746c8b7ecbb5c3c9d3e.png"></li>
+</ul>
+<p>WireShark 主要分为这几个界面</p>
+<ol>
+<li><p>Display Filter(显示过滤器)<br>用于设置过滤条件进行数据包列表过滤。菜单路径：分析 –&gt; Display Filters。<br><img src="https://i-blog.csdnimg.cn/blog_migrate/8908a405a952c3450b777f05014a0867.png"></p>
+</li>
+<li><p>Packet List Pane(数据包列表)<br>显示捕获到的数据包，每个数据包包含编号，时间戳，源地址，目标地址，协议，长度，以及数据包信息。不同协议的数据包使用了不同的颜色区分显示。<br> <img src="https://i-blog.csdnimg.cn/blog_migrate/1cbee059677d58e407b1e1136d59fab6.png"></p>
+</li>
+<li><p>Packet Details Pane(数据包详细信息)<br>在数据包列表中选择指定数据包，在数据包详细信息中会显示数据包的所有详细信息内容。数据包详细信息面板是最重要的，用来查看协议中的每一个字段。各行信息分别为</p>
+</li>
+</ol>
+<p>（1）Frame:   物理层的数据帧概况</p>
+<p>（2）Ethernet II: 数据链路层以太网帧头部信息</p>
+<p>（3）Internet Protocol Version 4: 互联网层IP包头部信息</p>
+<p>（4）Transmission Control Protocol:  传输层T的数据段头部信息，此处是TCP</p>
+<p>（5）Hypertext Transfer Protocol:  应用层的信息，此处是HTTP协议<br><img src="https://i-blog.csdnimg.cn/blog_migrate/66dc94e16a17de70965b02e455e9a246.png"></p>
+<p>TCP包的具体内容</p>
+<p>从下图可以看到wireshark捕获到的TCP包中的每个字段。<br><img src="https://i-blog.csdnimg.cn/blog_migrate/129d1fa81005446f0ef1620996500b71.png"><br><img src="https://i-blog.csdnimg.cn/blog_migrate/66d2d960412e6624c86451ea0137d930.png"><br>4. Dissector Pane(数据包字节区)<br>报文原始内容。<br><img src="https://i-blog.csdnimg.cn/blog_migrate/76c021956a77f8a3bbf8cef7050b37c9.png"></p>
+<h3 id="过滤器设置"><a href="#过滤器设置" class="headerlink" title="过滤器设置"></a>过滤器设置</h3><p>初学者使用wireshark时，将会得到大量的冗余数据包列表，以至于很难找到自己需要抓取的数据包部分。wireshark工具中自带了两种类型的过滤器，学会使用这两种过滤器会帮助我们在大量的数据中迅速找到我们需要的信息。<br>1.抓包过滤器<br>捕获过滤器的菜单栏路径为 捕获 –&gt; 捕获过滤器。用于在抓取数据包前设置。<br><img src="https://i-blog.csdnimg.cn/blog_migrate/f6374d1e711c1be3d2d522aebd87a434.png"></p>
+<p>如何使用呢？设置如下。<br><img src="https://i-blog.csdnimg.cn/blog_migrate/4ea56a2d3ebfb80602d2b1dfb4a517f3.png"></p>
+<p>ip host 183.232.231.172表示只捕获主机IP为183.232.231.172的数据包。获取结果如下：<br><img src="https://i-blog.csdnimg.cn/blog_migrate/6f97ef46b15add2a40662ceedb127e4f.png"></p>
+<ol start="2">
+<li>显示过滤器<br>显示过滤器是用于在抓取数据包后设置过滤条件进行过滤数据包。</li>
+</ol>
+<p>通常是在抓取数据包时设置条件相对宽泛或者没有设置导致抓取的数据包内容较多时使用显示过滤器设置条件过滤以方便分析。<br><img src="https://i-blog.csdnimg.cn/blog_migrate/1c503371fed0145a6be0f01d777e848d.png"></p>
+<p>执行ping <a target="_blank" rel="noopener" href="http://www.baidu.com/">www.baidu.com</a> 获取的数据包列表如下<br><img src="https://i-blog.csdnimg.cn/blog_migrate/11246e52c996202421b5683babac60aa.png"><br>观察上述获取的数据包列表，含有大量的无效数据。这时可以通过设置显示器过滤条件进行提取分析信息。ip.addr &#x3D;&#x3D; 183.232.231.172，并进行过滤。<br><img src="https://i-blog.csdnimg.cn/blog_migrate/6040b527cb1455ba47e56b3b987d2394.png"></p>
+<h4 id="wireshark过滤器表达式的规则"><a href="#wireshark过滤器表达式的规则" class="headerlink" title="wireshark过滤器表达式的规则"></a>wireshark过滤器表达式的规则</h4><p>抓包过滤器语法和实例<br>抓包过滤器类型Type（host、net、port）、方向Dir（src、dst）、协议Proto（ether、ip、tcp、udp、http、icmp、ftp等）、逻辑运算符（&amp;&amp;与、|| 或、！非）</p>
+<p>（1）协议过滤</p>
+<p>比较简单，直接在抓包过滤框中直接输入协议名即可。</p>
+<p>tcp，只显示TCP协议的数据包列表</p>
+<p>http，只查看HTTP协议的数据包列表</p>
+<p>icmp，只显示ICMP协议的数据包列表</p>
+<p>（2）IP过滤</p>
+<p>host 192.168.1.104</p>
+<p>src host 192.168.1.104</p>
+<p>dst host 192.168.1.104</p>
+<p>（3）端口过滤</p>
+<p>port 80</p>
+<p>src port 80</p>
+<p>dst port 80</p>
+<p>（4）逻辑运算符&amp;&amp;与、|| 或、！非</p>
+<p>src host 192.168.1.104 &amp;&amp;dst port 80 抓取主机地址为192.168.1.80、目的端口为80的数据包</p>
+<p>host 192.168.1.104 || host 192.168.1.102 抓取主机为192.168.1.104或者192.168.1.102的数据包</p>
+<p>！broadcast 不抓取广播数据包</p>
+<ol start="2">
+<li>显示过滤器语法和实例<br>（1）比较操作符</li>
+</ol>
+<p>比较操作符有</p>
+<p>&#x3D;&#x3D; 等于、！&#x3D; 不等于、&gt; 大于、&lt; 小于、&gt;&#x3D; 大于等于、&lt;&#x3D;小于等于</p>
+<p>（2）协议过滤</p>
+<p>比较简单，直接在Filter框中直接输入协议名即可。注意：协议名称需要输入小写。</p>
+<p>tcp，只显示TCP协议的数据包列表</p>
+<p>http，只查看HTTP协议的数据包列表</p>
+<p>icmp，只显示ICMP协议的数据包列表</p>
+<ol start="3">
+<li>ip过滤</li>
+</ol>
+<p>ip.src &#x3D;&#x3D;112.53.42.42 显示源地址为112.53.42.42的数据包列表</p>
+<p>ip.dst&#x3D;&#x3D;112.53.42.42, 显示目标地址为112.53.42.42的数据包列表</p>
+<p>ip.addr &#x3D;&#x3D; 112.53.42.42 显示源IP地址或目标IP地址为112.53.42.42的数据包列表</p>
+<ol start="4">
+<li>端口过滤</li>
+</ol>
+<p>tcp.port &#x3D;&#x3D;80,  显示源主机或者目的主机端口为80的数据包列表。</p>
+<p>tcp.srcport &#x3D;&#x3D; 80,  只显示TCP协议的源主机端口为80的数据包列表。</p>
+<p>tcp.dstport &#x3D;&#x3D; 80，只显示TCP协议的目的主机端口为80的数据包列表。</p>
+<p>5. http模式过滤</p>
+<p>http.request.method&#x3D;&#x3D;”GET”,   只显示HTTP GET方法的。</p>
+<ol start="6">
+<li>逻辑运算符为 and&#x2F;or&#x2F;not</li>
+</ol>
+<p>过滤多个条件组合时，使用and&#x2F;or。比如获取IP地址为192.168.0.104的ICMP数据包表达式为ip.addr &#x3D;&#x3D; 192.168.0.104 and icmp</p>
+<ol start="7">
+<li>按照数据包内容过滤</li>
+</ol>
+<p>假设我要以ICMP层中的内容进行过滤，可以单击选中界面中的码流，在下方进行选中数据。<br><img src="https://i-blog.csdnimg.cn/blog_migrate/cbc90d6ad8b348aeaa124fc02b2d14eb.png"></p>
+<p>右键单击选中后出现如下界面<br><img src="https://i-blog.csdnimg.cn/blog_migrate/2106f4fc03bec62c6b38b44bb2a49b2d.png"><br>选中后在过滤器中显示如下<br><img src="https://i-blog.csdnimg.cn/blog_migrate/bd1123d7e598bbc21aeb2fc736b3fb16.png"></p>
+<p>后面条件表达式就需要自己填写。如下我想过滤出data数据包中包含”abcd”内容的数据流。关键词是contains，完整条件表达式为data contains “abcd”<br><img src="https://i-blog.csdnimg.cn/blog_migrate/690026ec008d54a97713049736aa078f.png"></p>
+<h2 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h2><ol>
+<li>初步检查流量文件<ul>
+<li>使用Wireshark或tshark打开 .pcap 文件，查看流量总量、协议类型、IP地址和端口。</li>
+</ul>
+</li>
+<li>协议识别与分析 <ul>
+<li>确认流量中的常见协议（TCP、UDP、HTTP、DNS等），理解不同协议的特性，查找异常流 量。<br>  3.筛选和过滤数据包</li>
+<li>使用Wireshark的过滤器功能，逐步缩小感兴趣的数据包范围。比如，HTTP流量的过滤条件 是 http ，DNS是 dns ，通过源&#x2F;目的IP、端口等进一步过滤。</li>
+</ul>
+</li>
+<li>重建会话和提取内容<br>- 如果是HTTP或FTP协议，可以重建数据流，提取文件、图片或文本信息。<br>- 可以尝试通过流量中的关键字或payload查找线索，如查找flag。</li>
+<li>查找异常行为或隐藏信息<ul>
+<li>检查是否存在数据加密、编码、隐藏通信通道（如DNS隧道）。 查找流量中不常见的协议、端口或可疑的数据包，尤其是看上去无意义的流量。</li>
+</ul>
+</li>
+</ol>
+<h2 id="流量分析常见题型"><a href="#流量分析常见题型" class="headerlink" title="流量分析常见题型"></a>流量分析常见题型</h2><ul>
+<li><strong>HTTP流量分析</strong>： 题目常提供HTTP抓包文件，通过重建会话，可以获得flag，或通过特定请求的返回包中的信息来解 决问题。</li>
+<li><strong>DNS流量分析</strong>：通过DNS隧道或编码方式传递信息，需要通过流量中的域名、数据包内容进行解码，获取有用信 息。 </li>
+<li><strong>文件传输分析</strong>：抓包文件可能包含FTP、SMTP等协议的文件传输，通过提取文件或分析文件内容来解题。</li>
+<li><strong>加密或编码流量</strong>：流量可能通过某种加密或编码方式传输，利用常见的编码解密工具或自编脚本解密。</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2024/11/10/%E6%B5%81%E9%87%8F%E5%88%86%E6%9E%90/" data-id="cm3b8qqcr0002nwv6682253pe" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-JS" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2024/11/10/JS/" class="article-date">
@@ -209,15 +757,23 @@
       <ul>
         
           <li>
+            <a href="/2024/11/10/MISC-%E9%9A%90%E5%86%99/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/10/%E7%BC%96%E7%A0%81%E8%A7%A3%E7%A0%81/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/10/%E6%B5%81%E9%87%8F%E5%88%86%E6%9E%90/">(no title)</a>
+          </li>
+        
+          <li>
             <a href="/2024/11/10/JS/">(no title)</a>
           </li>
         
           <li>
             <a href="/2024/11/10/HTML/">(no title)</a>
-          </li>
-        
-          <li>
-            <a href="/2024/10/13/hello-world/">Hello World</a>
           </li>
         
       </ul>
